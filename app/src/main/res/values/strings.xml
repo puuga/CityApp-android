@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- app -->
+    <string name="app_name">CityApp</string>
+    <string name="preference_file_key">settings_file</string>
+    <string name="app_id">378262592330122</string>
+
+
+    <string name="title_activity_login">Login</string>
+
+</resources>
