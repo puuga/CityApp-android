@@ -46,7 +46,7 @@ public class MyActivity extends Activity implements
 
     // widget
     WebView webView;
-    String webURL = "http://beta.roomlinksaas.com/";
+    String webURL = "http://beta.roomlinksaas.com";
 
     Gson gson;
 
@@ -54,6 +54,7 @@ public class MyActivity extends Activity implements
     WifiManager wifi;
     int size = 0;
     List<ScanResult> results;
+    WifiBroadcastReceiver wifiBroadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,21 +91,15 @@ public class MyActivity extends Activity implements
             wifi.setWifiEnabled(true);
         }
 
-        registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context c, Intent intent)
-            {
-                results = wifi.getScanResults();
-                size = results.size();
-            }
-        }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        wifiBroadcastReceiver = new WifiBroadcastReceiver();
+
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
-        webView.loadUrl(webURL);
+        webView.loadUrl(webURL+"?userID="+settingHelper.getUserID());
         webView.setWebViewClient(new myWebClient());
         webView.addJavascriptInterface((this), "Android");
         webView.setWebChromeClient(new WebChromeClient() {
@@ -141,13 +136,28 @@ public class MyActivity extends Activity implements
         super.onStart();
         // Connect the client.
         mLocationClient.connect();
+
+        registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
+        wifi.startScan();
     }
 
     @Override
     protected void onStop() {
         // Disconnecting the client invalidates it.
         mLocationClient.disconnect();
+        unregisterReceiver(wifiBroadcastReceiver);
         super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @JavascriptInterface
@@ -157,8 +167,8 @@ public class MyActivity extends Activity implements
     // option 3 = sound, vibrate
     public void showNoti(String title, String content, int option) {
         Log.d("show noti", "show noti:" + title + "," + content);
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-                this).setSmallIcon(R.drawable.ic_launcher)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle(title).setContentText(content);
         Notification notification = mBuilder.build();
         switch (option) {
@@ -176,10 +186,10 @@ public class MyActivity extends Activity implements
             default:
                 break;
         }
-        notification.defaults = Notification.DEFAULT_ALL;
+        //notification.defaults = Notification.DEFAULT_ALL;
 
         // Sets an ID for the notification
-        int mNotificationId = 001;
+        int mNotificationId = 1;
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
@@ -268,6 +278,15 @@ public class MyActivity extends Activity implements
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
+        }
+    }
+
+    private class WifiBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            results = wifi.getScanResults();
+            size = results.size();
         }
     }
 

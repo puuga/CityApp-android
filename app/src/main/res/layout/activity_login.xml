@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     tools:context="com.appspace.cityapp.LoginActivity">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/imageView"
+        android:src="@drawable/bgcityapp"
+        android:scaleType="centerCrop" />
+
     <com.facebook.widget.LoginButton
         android:id="@+id/authButton"
         android:layout_width="wrap_content"
