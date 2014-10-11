@@ -46,7 +46,7 @@ public class MyActivity extends Activity implements
 
     // widget
     WebView webView;
-    String webURL = "http://beta.roomlinksaas.com";
+    String webURL = "http://beta.roomlinksaas.com/RoomlinkindoorCo.aspx";
 
     Gson gson;
 
@@ -245,6 +245,8 @@ public class MyActivity extends Activity implements
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        //Log.d("gps",mLocationClient.getLastLocation().toString()) ;
 
         // return to javascript in webview
         final String temp = gson.toJson(wifiData);
