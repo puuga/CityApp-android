@@ -246,8 +246,6 @@ public class MyActivity extends Activity implements
             e.printStackTrace();
         }
 
-        //Log.d("gps",mLocationClient.getLastLocation().toString()) ;
-
         // return to javascript in webview
         final String temp = gson.toJson(wifiData);
         Log.d("wifi json", temp);
