@@ -67,7 +67,7 @@ public class FacebookManager {
 
 
 
-                                Map<String, Object> params = new HashMap<String, Object>();
+                                Map<String, String> params = new HashMap<String, String>();
                                 params.put("firstname", user.getFirstName());
                                 params.put("lastname", user.getLastName());
                                 params.put("email", user.getProperty("email").toString());

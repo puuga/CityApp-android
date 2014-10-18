@@ -47,6 +47,8 @@ public class MyActivity extends Activity implements
     // widget
     WebView webView;
     String webURL = "http://beta.roomlinksaas.com/RoomlinkindoorCo.aspx";
+    //
+    // String webURL = "http://www.google.com";
 
     Gson gson;
 
