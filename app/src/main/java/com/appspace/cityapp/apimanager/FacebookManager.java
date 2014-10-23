@@ -55,24 +55,32 @@ public class FacebookManager {
                         @Override
                         public void onCompleted(GraphUser user, Response response) {
                             if (user != null) {
+                                String id = user.getId();
+                                String firstname = user.getFirstName();
+                                String lastname = user.getLastName();
+                                String birthDay = user.getBirthday();
+                                String[] temp = birthDay.split("/");
+                                String newBirthDay = temp[2]+"-"+temp[0]+"-"+temp[1];
+                                String gender = user.getProperty("gender").toString();
+                                String email = user.getProperty("email").toString();
 
-                                Log.d(facebookLoginTag, "user id: " + user.getId());
-                                Log.d(facebookLoginTag, "user firstname: " + user.getFirstName());
-                                Log.d(facebookLoginTag, "user lastname: " + user.getLastName());
-                                Log.d(facebookLoginTag, "user birthday: " + user.getBirthday());
-                                Log.d(facebookLoginTag, "user email: " + user.getProperty("email").toString());
+                                Log.d(facebookLoginTag, "user id: " + id);
+                                Log.d(facebookLoginTag, "user firstname: " + firstname);
+                                Log.d(facebookLoginTag, "user lastname: " + firstname);
+                                Log.d(facebookLoginTag, "user birthday: " + lastname);
+                                Log.d(facebookLoginTag, "user new birthday: " + newBirthDay);
+                                Log.d(facebookLoginTag, "user gender: " + gender);
+                                Log.d(facebookLoginTag, "user email: " + email);
                                 Log.d(facebookLoginTag, "Token: " + session.getAccessToken());
-
                                 Log.d(facebookLoginTag, "response: " + response.toString());
 
-
-
                                 Map<String, String> params = new HashMap<String, String>();
-                                params.put("firstname", user.getFirstName());
-                                params.put("lastname", user.getLastName());
-                                params.put("email", user.getProperty("email").toString());
-                                params.put("facebook_id", user.getId());
-                                params.put("birthday", user.getBirthday());
+                                params.put("firstname", firstname);
+                                params.put("lastname", lastname);
+                                params.put("email", email);
+                                params.put("facebook_id", id);
+                                params.put("birthday", newBirthDay);
+                                params.put("gender", gender);
                                 params.put("facebook_token", session.getAccessToken());
 
                                 AQuery aq = new AQuery(context);
@@ -96,6 +104,7 @@ public class FacebookManager {
                                                     Log.d("callback", "email:"+json.getString("email"));
                                                     Log.d("callback", "facebook_id:"+json.getString("facebook_id"));
                                                     Log.d("callback", "birthday:"+json.getString("birthday"));
+                                                    Log.d("callback", "gender:"+json.getString("gender"));
                                                     Log.d("callback", "facebook_token:"+json.getString("facebook_token"));
 
                                                     SettingHelper settingHelper = new SettingHelper(context);

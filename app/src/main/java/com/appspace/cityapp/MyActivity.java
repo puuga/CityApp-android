@@ -137,9 +137,9 @@ public class MyActivity extends Activity implements
     protected void onStart() {
         super.onStart();
         // Connect the client.
-        mLocationClient.connect();
+        //mLocationClient.connect();
 
-        registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        //registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
         wifi.startScan();
     }
@@ -147,19 +147,29 @@ public class MyActivity extends Activity implements
     @Override
     protected void onStop() {
         // Disconnecting the client invalidates it.
-        mLocationClient.disconnect();
-        unregisterReceiver(wifiBroadcastReceiver);
+        // mLocationClient.disconnect();
+        // unregisterReceiver(wifiBroadcastReceiver);
         super.onStop();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!mLocationClient.isConnected()) {
+            mLocationClient.connect();
+            registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+
+        if (mLocationClient.isConnected()) {
+            mLocationClient.disconnect();
+            unregisterReceiver(wifiBroadcastReceiver);
+        }
     }
 
     @JavascriptInterface
