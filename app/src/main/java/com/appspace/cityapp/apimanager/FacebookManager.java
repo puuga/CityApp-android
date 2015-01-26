@@ -1,7 +1,9 @@
 package com.appspace.cityapp.apimanager;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 
@@ -116,7 +118,17 @@ public class FacebookManager {
                                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                     context.startActivity(intent);
                                                 } else {
-
+                                                    Log.d("callback", status.getCode() + ":" + json.toString());
+                                                    new AlertDialog.Builder(context)
+                                                            .setTitle("Error")
+                                                            .setMessage("Can not connect to server")
+                                                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int which) {
+                                                                    // do nothing
+                                                                }
+                                                            })
+                                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                                            .show();
                                                 }
                                             } catch (JSONException e) {
                                                 e.printStackTrace();

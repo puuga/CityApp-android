@@ -46,9 +46,8 @@ public class MyActivity extends Activity implements
 
     // widget
     WebView webView;
-    String webURL = "http://beta.roomlinksaas.com/RoomlinkindoorCo.aspx";
-    //
-    // String webURL = "http://www.google.com";
+    String webURL;
+
 
     Gson gson;
 
@@ -64,6 +63,7 @@ public class MyActivity extends Activity implements
         setContentView(R.layout.activity_my);
 
         settingHelper = new SettingHelper(this);
+        webURL = Constant.getkWebUrl(settingHelper);
         gson = new Gson();
 
         //check facebook login

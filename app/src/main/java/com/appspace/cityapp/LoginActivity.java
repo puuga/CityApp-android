@@ -47,7 +47,7 @@ public class LoginActivity extends Activity {
         // Add code to print out the key hash
         try {
             PackageInfo info = getPackageManager().getPackageInfo(
-                    "com.worldmotorracingclub.app",
+                    "com.appspace.cityapp",
                     PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
                 MessageDigest md = MessageDigest.getInstance("SHA");
