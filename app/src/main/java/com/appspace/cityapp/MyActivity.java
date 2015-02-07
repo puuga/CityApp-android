@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +32,11 @@ import com.google.android.gms.location.LocationClient;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import static android.net.wifi.WifiManager.calculateSignalLevel;
 
 
 public class MyActivity extends Activity implements
@@ -179,9 +184,16 @@ public class MyActivity extends Activity implements
     // option 3 = sound, vibrate
     public void showNoti(String title, String content, int option) {
         Log.d("show noti", "show noti:" + title + "," + content);
+        Intent intent = new Intent(this, MyActivity.class);
+        //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent activity = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(title).setContentText(content);
+                .setContentTitle(title)
+                .setContentText(content)
+                .setAutoCancel(true)
+                .setContentIntent(activity);
         Notification notification = mBuilder.build();
         switch (option) {
             case 0:
@@ -206,6 +218,7 @@ public class MyActivity extends Activity implements
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, notification);
+
     }
 
     @JavascriptInterface
@@ -247,6 +260,7 @@ public class MyActivity extends Activity implements
                 temp.setCapabilities(results.get(size).capabilities);
                 temp.setLevel(results.get(size).level);
                 temp.setFrequency(results.get(size).frequency);
+                temp.setCalLevel(calculateSignalLevel(results.get(size).level,10));
 
                 Log.d("wifi result", temp.toString());
                 wifiData.add(temp);
@@ -258,6 +272,15 @@ public class MyActivity extends Activity implements
             e.printStackTrace();
         }
 
+//        wifiData = sortWifiData(wifiData);
+        //Sorting
+        Collections.sort(wifiData, new Comparator<WifiData>() {
+            @Override
+            public int compare(WifiData wifiData1, WifiData wifiData2) {
+                return wifiData2.getCalLevel() - wifiData1.getCalLevel();
+            }
+        });
+
         // return to javascript in webview
         final String temp = gson.toJson(wifiData);
         Log.d("wifi json", temp);
@@ -267,6 +290,33 @@ public class MyActivity extends Activity implements
                         + temp + "')");
             }
         });
+    }
+
+    private ArrayList<WifiData> sortWifiData(ArrayList<WifiData> wifiData) {
+        if (wifiData.size()<=1) {
+            return wifiData;
+        }
+        // Bubble Sort
+        WifiData[] arrs = (WifiData[]) wifiData.toArray();
+        for (int i=1; i<arrs.length; i++) {
+            boolean swapped = false;
+            for (int j=0; j<arrs.length-i; j++) {
+                if (arrs[j].getCalLevel() < arrs[j+1].getCalLevel()) {
+                    WifiData temp = arrs[j];
+                    arrs[j] = arrs[j+1];
+                    arrs[j+1] = temp;
+                    swapped = true;
+                }
+            }
+            if (!swapped) {
+                break;
+            }
+        }
+        wifiData.clear();
+        for ( WifiData arr:arrs ) {
+            wifiData.add(arr);
+        }
+        return wifiData;
     }
 
     private class myWebClient extends WebViewClient {

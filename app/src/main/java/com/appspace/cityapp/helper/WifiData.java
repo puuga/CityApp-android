@@ -6,6 +6,7 @@ public class WifiData {
 	private String capabilities;
 	private int level;
 	private int frequency;
+    private int calLevel;
 	
 	public String getSsid() {
 		return ssid;
@@ -47,12 +48,22 @@ public class WifiData {
 		this.frequency = frequency;
 	}
 
+    public int getCalLevel() {
+        return calLevel;
+    }
+
+    public void setCalLevel(int calLevel) {
+        this.calLevel = calLevel;
+    }
+
 	public String toString() {
 		String temp = "SSID:" + getSsid();
         temp += " BSSID:" + getBSsid();
         temp += " capabilities:" + getCapabilities();
         temp += " level:" + getLevel();
         temp += " frequency:" + getFrequency();
+        temp += " calLevel:" + getCalLevel();
 		return temp;
 	}
+
 }
