@@ -2,19 +2,23 @@ package com.appspace.cityapp;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -77,9 +81,8 @@ public class MyActivity extends Activity implements
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } else {
-            Log.d(Constant.cAppTag,"start app with user id:"+settingHelper.getUserID());
+            Log.d(Constant.cAppTag, "start app with user id:" + settingHelper.getUserID());
         }
-
 
 
         mLocationClient = new LocationClient(this, this, this);
@@ -106,7 +109,7 @@ public class MyActivity extends Activity implements
     private void initWebView() {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
-        webView.loadUrl(webURL+"?userID="+settingHelper.getUserID());
+        webView.loadUrl(webURL + "?userID=" + settingHelper.getUserID());
         webView.setWebViewClient(new myWebClient());
         webView.addJavascriptInterface((this), "Android");
         webView.setWebChromeClient(new WebChromeClient() {
@@ -125,17 +128,17 @@ public class MyActivity extends Activity implements
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.i("GPS","connected");
+        Log.i("GPS", "connected");
     }
 
     @Override
     public void onDisconnected() {
-        Log.i("GPS","disconnected");
+        Log.i("GPS", "disconnected");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.i("GPS","ConnectionFailed:"+connectionResult.toString());
+        Log.i("GPS", "ConnectionFailed:" + connectionResult.toString());
     }
 
     @Override
@@ -161,6 +164,9 @@ public class MyActivity extends Activity implements
     protected void onResume() {
         super.onResume();
 
+        // check location service enable
+        checkLocationEnabled();
+
         if (!mLocationClient.isConnected()) {
             mLocationClient.connect();
             registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -174,6 +180,42 @@ public class MyActivity extends Activity implements
         if (mLocationClient.isConnected()) {
             mLocationClient.disconnect();
             unregisterReceiver(wifiBroadcastReceiver);
+        }
+    }
+
+    private void checkLocationEnabled() {
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch (Exception ex) {
+            Log.d("gps_enabled", String.valueOf(gps_enabled));
+        }
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception ex) {
+            Log.d("network_enabled", String.valueOf(network_enabled));
+        }
+
+        if (!gps_enabled && !network_enabled) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Need Location Service Enabled");
+            dialog.setMessage("Do you want to enable location service?");
+            dialog.setPositiveButton("Yes, Sure!", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(myIntent);
+                }
+            });
+            dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // do nothing
+                }
+            });
+            dialog.show();
         }
     }
 
@@ -227,6 +269,15 @@ public class MyActivity extends Activity implements
     }
 
     @JavascriptInterface
+    public void share(String text) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+        sendIntent.setType("text/plain");
+        startActivity(Intent.createChooser(sendIntent, "Share"));
+    }
+
+    @JavascriptInterface
     public void getLocationFromPlayService() {
         mCurrentLocation = mLocationClient.getLastLocation();
 
@@ -260,15 +311,14 @@ public class MyActivity extends Activity implements
                 temp.setCapabilities(results.get(size).capabilities);
                 temp.setLevel(results.get(size).level);
                 temp.setFrequency(results.get(size).frequency);
-                temp.setCalLevel(calculateSignalLevel(results.get(size).level,10));
+                temp.setCalLevel(calculateSignalLevel(results.get(size).level, 10));
 
                 Log.d("wifi result", temp.toString());
                 wifiData.add(temp);
 
                 size--;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -293,18 +343,18 @@ public class MyActivity extends Activity implements
     }
 
     private ArrayList<WifiData> sortWifiData(ArrayList<WifiData> wifiData) {
-        if (wifiData.size()<=1) {
+        if (wifiData.size() <= 1) {
             return wifiData;
         }
         // Bubble Sort
         WifiData[] arrs = (WifiData[]) wifiData.toArray();
-        for (int i=1; i<arrs.length; i++) {
+        for (int i = 1; i < arrs.length; i++) {
             boolean swapped = false;
-            for (int j=0; j<arrs.length-i; j++) {
-                if (arrs[j].getCalLevel() < arrs[j+1].getCalLevel()) {
+            for (int j = 0; j < arrs.length - i; j++) {
+                if (arrs[j].getCalLevel() < arrs[j + 1].getCalLevel()) {
                     WifiData temp = arrs[j];
-                    arrs[j] = arrs[j+1];
-                    arrs[j+1] = temp;
+                    arrs[j] = arrs[j + 1];
+                    arrs[j + 1] = temp;
                     swapped = true;
                 }
             }
@@ -313,7 +363,7 @@ public class MyActivity extends Activity implements
             }
         }
         wifiData.clear();
-        for ( WifiData arr:arrs ) {
+        for (WifiData arr : arrs) {
             wifiData.add(arr);
         }
         return wifiData;
