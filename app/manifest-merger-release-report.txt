@@ -134,93 +134,95 @@ MERGED from io.fabric.sdk.android:fabric:1.2.0:9:5
 MERGED from com.crashlytics.sdk.android:beta:1.1.2:9:5
 MERGED from io.fabric.sdk.android:fabric:1.2.0:9:5
 	android:label
-		ADDED from AndroidManifest.xml:16:9
+		ADDED from AndroidManifest.xml:18:9
 	android:allowBackup
-		ADDED from AndroidManifest.xml:14:9
+		ADDED from AndroidManifest.xml:16:9
 	android:icon
-		ADDED from AndroidManifest.xml:15:9
-	android:theme
 		ADDED from AndroidManifest.xml:17:9
-meta-data#com.facebook.sdk.ApplicationId
-ADDED from AndroidManifest.xml:19:9
-	android:value
-		ADDED from AndroidManifest.xml:19:66
-	android:name
-		ADDED from AndroidManifest.xml:19:20
-meta-data#com.google.android.gms.version
-ADDED from AndroidManifest.xml:20:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
-	android:value
-		ADDED from AndroidManifest.xml:20:66
-	android:name
-		ADDED from AndroidManifest.xml:20:20
-activity#com.appspace.cityapp.MyActivity
-ADDED from AndroidManifest.xml:22:9
-	android:screenOrientation
-		ADDED from AndroidManifest.xml:25:13
-	android:label
-		ADDED from AndroidManifest.xml:24:13
-	android:launchMode
-		ADDED from AndroidManifest.xml:26:13
 	android:theme
+		ADDED from AndroidManifest.xml:19:9
+	android:name
+		ADDED from AndroidManifest.xml:14:9
+meta-data#com.facebook.sdk.ApplicationId
+ADDED from AndroidManifest.xml:21:9
+	android:value
+		ADDED from AndroidManifest.xml:21:66
+	android:name
+		ADDED from AndroidManifest.xml:21:20
+meta-data#com.google.android.gms.version
+ADDED from AndroidManifest.xml:22:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+MERGED from com.google.android.gms:play-services-base:7.0.0:21:9
+	android:value
+		ADDED from AndroidManifest.xml:22:66
+	android:name
+		ADDED from AndroidManifest.xml:22:20
+activity#com.appspace.cityapp.MyActivity
+ADDED from AndroidManifest.xml:24:9
+	android:screenOrientation
 		ADDED from AndroidManifest.xml:27:13
+	android:label
+		ADDED from AndroidManifest.xml:26:13
+	android:launchMode
+		ADDED from AndroidManifest.xml:28:13
+	android:theme
+		ADDED from AndroidManifest.xml:29:13
 	android:name
-		ADDED from AndroidManifest.xml:23:13
+		ADDED from AndroidManifest.xml:25:13
 intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
-ADDED from AndroidManifest.xml:28:13
+ADDED from AndroidManifest.xml:30:13
 action#android.intent.action.MAIN
-ADDED from AndroidManifest.xml:29:17
-	android:name
-		ADDED from AndroidManifest.xml:29:25
-category#android.intent.category.LAUNCHER
 ADDED from AndroidManifest.xml:31:17
 	android:name
-		ADDED from AndroidManifest.xml:31:27
+		ADDED from AndroidManifest.xml:31:25
+category#android.intent.category.LAUNCHER
+ADDED from AndroidManifest.xml:33:17
+	android:name
+		ADDED from AndroidManifest.xml:33:27
 activity#com.appspace.cityapp.LoginActivity
-ADDED from AndroidManifest.xml:34:9
+ADDED from AndroidManifest.xml:36:9
 	android:screenOrientation
-		ADDED from AndroidManifest.xml:37:13
+		ADDED from AndroidManifest.xml:39:13
 	android:label
-		ADDED from AndroidManifest.xml:36:13
-	android:theme
 		ADDED from AndroidManifest.xml:38:13
+	android:theme
+		ADDED from AndroidManifest.xml:40:13
 	android:name
-		ADDED from AndroidManifest.xml:35:13
+		ADDED from AndroidManifest.xml:37:13
 activity#com.facebook.LoginActivity
-ADDED from AndroidManifest.xml:43:9
+ADDED from AndroidManifest.xml:45:9
 	android:name
-		ADDED from AndroidManifest.xml:43:19
+		ADDED from AndroidManifest.xml:45:19
 meta-data#io.fabric.ApiKey
-ADDED from AndroidManifest.xml:44:9
+ADDED from AndroidManifest.xml:46:9
 	android:value
-		ADDED from AndroidManifest.xml:46:13
+		ADDED from AndroidManifest.xml:48:13
 	android:name
-		ADDED from AndroidManifest.xml:45:13
+		ADDED from AndroidManifest.xml:47:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.facebook.android:facebook-android-sdk:3.23.1:20:5

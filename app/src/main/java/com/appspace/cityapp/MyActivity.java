@@ -35,6 +35,9 @@ import com.appspace.cityapp.helper.SettingHelper;
 import com.appspace.cityapp.helper.WifiData;
 import com.appspace.cityapp.model.IBeacon;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -121,6 +124,14 @@ public class MyActivity extends ActionBarActivity implements
         client = new AsyncHttpClient();
         getIBeaconDevices();
 
+        initGoogleAnalytic();
+
+    }
+
+    private void initGoogleAnalytic() {
+        Tracker t = ((GoogleAnalyticsApp) getApplication()).getTracker(GoogleAnalyticsApp.TrackerName.APP_TRACKER);
+        t.setScreenName("Home");
+        t.send(new HitBuilders.AppViewBuilder().build());
     }
 
     private void getIBeaconDevices() {
@@ -135,7 +146,7 @@ public class MyActivity extends ActionBarActivity implements
                 Log.i("JSONArray",response.toString());
                 iBeacon = gson.fromJson(response.toString(), IBeacon[].class);
                 readIBeaconSuccess = true;
-                Log.i("iBeacon","" + iBeacon.length);
+                Log.i("iBeacon","There are " + iBeacon.length + " beacons to monitor");
             }
         });
     }
@@ -223,6 +234,8 @@ public class MyActivity extends ActionBarActivity implements
         //registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
         wifi.startScan();
+
+        GoogleAnalytics.getInstance(MyActivity.this).reportActivityStart(this);
     }
 
     @Override
@@ -232,6 +245,8 @@ public class MyActivity extends ActionBarActivity implements
 
         // unregisterReceiver(wifiBroadcastReceiver);
         super.onStop();
+
+        GoogleAnalytics.getInstance(MyActivity.this).reportActivityStop(this);
     }
 
     @Override

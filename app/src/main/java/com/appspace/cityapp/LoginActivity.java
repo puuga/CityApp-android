@@ -13,6 +13,9 @@ import android.view.View;
 import com.appspace.cityapp.apimanager.FacebookManager;
 import com.appspace.cityapp.helper.SettingHelper;
 import com.facebook.Session;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import java.security.MessageDigest;
 
@@ -33,6 +36,26 @@ public class LoginActivity extends Activity {
         bindSharedPreferences();
 
         bindWidget();
+
+        initGoogleAnalytic();
+    }
+
+    private void initGoogleAnalytic() {
+        Tracker t = ((GoogleAnalyticsApp) getApplication()).getTracker(GoogleAnalyticsApp.TrackerName.APP_TRACKER);
+        t.setScreenName("Login");
+        t.send(new HitBuilders.AppViewBuilder().build());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        GoogleAnalytics.getInstance(LoginActivity.this).reportActivityStart(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(LoginActivity.this).reportActivityStop(this);
     }
 
     private void bindSharedPreferences() {
