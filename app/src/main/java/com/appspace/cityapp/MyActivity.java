@@ -1,8 +1,8 @@
 package com.appspace.cityapp;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
@@ -19,7 +20,9 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -30,28 +33,46 @@ import android.widget.Toast;
 import com.appspace.cityapp.helper.CustomLocation;
 import com.appspace.cityapp.helper.SettingHelper;
 import com.appspace.cityapp.helper.WifiData;
+import com.appspace.cityapp.model.IBeacon;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+
+import org.apache.http.Header;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
+
 import static android.net.wifi.WifiManager.calculateSignalLevel;
 
 
-public class MyActivity extends Activity implements
-        GooglePlayServicesClient.ConnectionCallbacks,
-        GooglePlayServicesClient.OnConnectionFailedListener {
+public class MyActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     // SharedPreferences
     SettingHelper settingHelper;
 
-    Location mCurrentLocation;
-    LocationClient mLocationClient;
+    // google api
+    Location mLastLocation;
+    GoogleApiClient mGoogleApiClient;
+    // Request code to use when launching the resolution activity
+    private static final int REQUEST_RESOLVE_ERROR = 1001;
+    // Unique tag for the error dialog fragment
+    private static final String DIALOG_ERROR = "dialog_error";
+    // Bool to track whether the app is already resolving an error
+    private boolean mResolvingError = false;
 
     // widget
     WebView webView;
@@ -66,9 +87,15 @@ public class MyActivity extends Activity implements
     List<ScanResult> results;
     WifiBroadcastReceiver wifiBroadcastReceiver;
 
+    // iBeacon
+    AsyncHttpClient client;
+    IBeacon iBeacon[];
+    boolean readIBeaconSuccess = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_my);
 
         settingHelper = new SettingHelper(this);
@@ -78,20 +105,47 @@ public class MyActivity extends Activity implements
         //check facebook login
         if (settingHelper.getUserID().equals("")) {
             Intent intent = new Intent(this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         } else {
             Log.d(Constant.cAppTag, "start app with user id:" + settingHelper.getUserID());
         }
 
-
-        mLocationClient = new LocationClient(this, this, this);
+        buildGoogleApiClient();
 
         bindWidget();
         initWebView();
         initWifiManager();
 
+        // iBeacon
+        client = new AsyncHttpClient();
+        getIBeaconDevices();
 
+    }
+
+    private void getIBeaconDevices() {
+        client.get(Constant.kIBeaconDevices, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                Log.i("JSONObject",response.toString());
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+                Log.i("JSONArray",response.toString());
+                iBeacon = gson.fromJson(response.toString(), IBeacon[].class);
+                readIBeaconSuccess = true;
+                Log.i("iBeacon","" + iBeacon.length);
+            }
+        });
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
     }
 
     private void initWifiManager() {
@@ -129,23 +183,42 @@ public class MyActivity extends Activity implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.i("GPS", "connected");
+        callLastLocation();
     }
 
     @Override
-    public void onDisconnected() {
-        Log.i("GPS", "disconnected");
+    public void onConnectionSuspended(int i) {
+
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i("GPS", "ConnectionFailed:" + connectionResult.toString());
+        if (mResolvingError) {
+            // Already attempting to resolve an error.
+            return;
+        } else if (connectionResult.hasResolution()) {
+            try {
+                mResolvingError = true;
+                connectionResult.startResolutionForResult(this, REQUEST_RESOLVE_ERROR);
+            } catch (IntentSender.SendIntentException e) {
+                // There was an error with the resolution intent. Try again.
+                mGoogleApiClient.connect();
+            }
+        } else {
+            // Show dialog using GooglePlayServicesUtil.getErrorDialog()
+            showErrorDialog(connectionResult.getErrorCode());
+            mResolvingError = true;
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         // Connect the client.
-        //mLocationClient.connect();
+        if (!mResolvingError) {  // more about this later
+            mGoogleApiClient.connect();
+        }
 
         //registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
@@ -155,7 +228,8 @@ public class MyActivity extends Activity implements
     @Override
     protected void onStop() {
         // Disconnecting the client invalidates it.
-        // mLocationClient.disconnect();
+        mGoogleApiClient.disconnect();
+
         // unregisterReceiver(wifiBroadcastReceiver);
         super.onStop();
     }
@@ -167,20 +241,26 @@ public class MyActivity extends Activity implements
         // check location service enable
         checkLocationEnabled();
 
-        if (!mLocationClient.isConnected()) {
-            mLocationClient.connect();
-            registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        }
+        registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        if (mLocationClient.isConnected()) {
-            mLocationClient.disconnect();
-            unregisterReceiver(wifiBroadcastReceiver);
+        unregisterReceiver(wifiBroadcastReceiver);
+
+    }
+
+    private void callLastLocation() {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (mLastLocation != null) {
+            Log.i("location", mLastLocation.toString());
+        } else {
+            Log.i("location", "null object");
         }
+
     }
 
     private void checkLocationEnabled() {
@@ -279,18 +359,24 @@ public class MyActivity extends Activity implements
 
     @JavascriptInterface
     public void getLocationFromPlayService() {
-        mCurrentLocation = mLocationClient.getLastLocation();
+        callLastLocation();
 
         CustomLocation cLocation = new CustomLocation();
-        cLocation.setAltitude(mCurrentLocation.getAltitude());
-        cLocation.setLatitude(mCurrentLocation.getLatitude());
-        cLocation.setLongitude(mCurrentLocation.getLongitude());
-        final String temp = gson.toJson(cLocation);
+        if (mLastLocation != null) {
+            cLocation.setAltitude(mLastLocation.getAltitude());
+            cLocation.setLatitude(mLastLocation.getLatitude());
+            cLocation.setLongitude(mLastLocation.getLongitude());
+        } else {
+            cLocation.setAltitude(0);
+            cLocation.setLatitude(0);
+            cLocation.setLongitude(0);
+        }
+        final String jsonOutput = gson.toJson(cLocation);
 
         // return current location to webview();
         MyActivity.this.runOnUiThread(new Runnable() {
             public void run() {
-                webView.loadUrl("javascript:getAndroidLocation('" + temp + "')");
+                webView.loadUrl("javascript:getAndroidLocation('" + jsonOutput + "')");
             }
         });
     }
@@ -399,6 +485,42 @@ public class MyActivity extends Activity implements
         public void onReceive(Context context, Intent intent) {
             results = wifi.getScanResults();
             size = results.size();
+        }
+    }
+
+    // The rest of this code is all about building the error dialog
+
+    /* Creates a dialog for an error message */
+    private void showErrorDialog(int errorCode) {
+        // Create a fragment for the error dialog
+        ErrorDialogFragment dialogFragment = new ErrorDialogFragment();
+        // Pass the error that should be displayed
+        Bundle args = new Bundle();
+        args.putInt(DIALOG_ERROR, errorCode);
+        dialogFragment.setArguments(args);
+        dialogFragment.show(getSupportFragmentManager(), "errordialog");
+    }
+
+    /* Called from ErrorDialogFragment when the dialog is dismissed. */
+    public void onDialogDismissed() {
+        mResolvingError = false;
+    }
+
+    /* A fragment to display an error dialog */
+    public static class ErrorDialogFragment extends DialogFragment {
+        public ErrorDialogFragment() { }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Get the error code and retrieve the appropriate dialog
+            int errorCode = this.getArguments().getInt(DIALOG_ERROR);
+            return GooglePlayServicesUtil.getErrorDialog(errorCode,
+                    this.getActivity(), REQUEST_RESOLVE_ERROR);
+        }
+
+        @Override
+        public void onDismiss(DialogInterface dialog) {
+            ((MyActivity)getActivity()).onDialogDismissed();
         }
     }
 

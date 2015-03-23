@@ -20,4 +20,6 @@ public class Constant {
     public static final String getkWebUrl(SettingHelper settingHelper) {
         return kWebURL+"?userId="+settingHelper.getUserID()+"&idAccess=rlsRoomlinksaas2011";
     }
+
+    public static final String kIBeaconDevices = "http://roomlinksaascity.azurewebsites.net/eeialldevice.aspx?eeiid=rlseei2011";
 }
