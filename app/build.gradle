@@ -22,8 +22,8 @@ android {
         applicationId "com.appspace.cityapp"
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 6
-        versionName '1.1.5'
+        versionCode 12
+        versionName '1.1.11'
     }
     buildTypes {
         release {

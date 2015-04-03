@@ -42,6 +42,8 @@ public class FacebookManager {
         List<String> permissions = new ArrayList<String>();
         permissions.add("email");
         permissions.add("user_birthday");
+        permissions.add("public_profile");
+        permissions.add("basic_info");
 
         Session session = Session.openActiveSession(activity, true, permissions, new Session.StatusCallback() {
 
@@ -60,9 +62,16 @@ public class FacebookManager {
                                 String id = user.getId();
                                 String firstname = user.getFirstName();
                                 String lastname = user.getLastName();
-                                String birthDay = user.getBirthday();
-                                String[] temp = birthDay.split("/");
-                                String newBirthDay = temp[2]+"-"+temp[0]+"-"+temp[1];
+                                String birthDay = null;
+                                String[] temp = null;
+                                String newBirthDay = null;
+                                try {
+                                    birthDay = user.getBirthday();
+                                    temp = birthDay.split("/");
+                                    newBirthDay = temp[2]+"-"+temp[0]+"-"+temp[1];
+                                } catch (NullPointerException e) {
+                                    newBirthDay = "0000-00-00";
+                                }
                                 String gender = user.getProperty("gender").toString();
                                 String email = user.getProperty("email").toString();
 

@@ -13,6 +13,7 @@ import android.view.View;
 import com.appspace.cityapp.apimanager.FacebookManager;
 import com.appspace.cityapp.helper.SettingHelper;
 import com.facebook.Session;
+import com.facebook.widget.LoginButton;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -23,6 +24,8 @@ import java.security.MessageDigest;
 public class LoginActivity extends Activity {
 
     private Session session;
+
+    LoginButton authButton;
 
     // SharedPreferences
     SettingHelper settingHelper;
@@ -58,12 +61,27 @@ public class LoginActivity extends Activity {
         GoogleAnalytics.getInstance(LoginActivity.this).reportActivityStop(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+//        if (settingHelper.getFacebookLoginStatus()) {
+//            finish();
+//        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
     private void bindSharedPreferences() {
         settingHelper = new SettingHelper(this);
     }
 
     private void bindWidget() {
-
+        // authButton = (LoginButton) findViewById(R.id.authButton);
+        // authButton.setReadPermissions(Arrays.asList("public_profile", "basic_info", "user_birthday", "email"));
     }
 
     private void printHashKey() {
@@ -104,10 +122,10 @@ public class LoginActivity extends Activity {
                 settingHelper.setFacebookToken(session.getAccessToken());
 
                 Intent intent = new Intent(this, MyActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
-
+                //finish();
             }
         }
     }

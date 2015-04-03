@@ -12,13 +12,20 @@ public class Constant {
     public static final String userID = "userID";
 
     // public static final String kAPIBaseUrl = "http://128.199.172.185/cityapp/register_user.php";
-    public static final String kAPIBaseUrl = "http://citylogin.azurewebsites.net/register_user.php";
+    // public static final String kAPIBaseUrl = "http://citylogin.azurewebsites.net/register_user.php";
+    public static final String kAPIBaseUrl = "http://128.199.133.166/roomlink/register_user.php";
+
+    public static final String kInternetUrl = "http://128.199.208.34/internet-service/service.html";
 
     // beta.roomlinksaas.com/RoomlinkindoorCo.aspx?userId=ข้อมูลยูสเซอร์ไอดี&idAccess=rlsRoomlinksaas2011
-    public static final String kWebURL = "http://beta.roomlinksaas.com/RoomlinkindoorCo.aspx";
+    // public static final String kWebURL = "http://beta.roomlinksaas.com/RoomlinkindoorCo.aspx";
+    public static final String kWebURL = "http://roomlinksaascity.azurewebsites.net/roomlinkindoorCo.aspx";
+    public static final String kWeb404 = "file:///android_asset/noInternet.html";
+    public static final String kWebTest = "file:///android_asset/test.html";
 
     public static final String getkWebUrl(SettingHelper settingHelper) {
-        return kWebURL+"?userId="+settingHelper.getUserID()+"&idAccess=rlsRoomlinksaas2011";
+        return kWebURL+"?userId="+settingHelper.getUserID()+"&idAccess=rlsRoomlinksaas2011&userID="+settingHelper.getUserID();
+//        return kWebTest;
     }
 
     public static final String kIBeaconDevices = "http://roomlinksaascity.azurewebsites.net/eeialldevice.aspx?eeiid=rlseei2011";

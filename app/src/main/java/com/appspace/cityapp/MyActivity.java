@@ -12,12 +12,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.pm.ApplicationInfo;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
@@ -44,12 +46,14 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,37 +99,105 @@ public class MyActivity extends ActionBarActivity implements
     IBeacon iBeacon[];
     boolean readIBeaconSuccess = false;
 
+    // internet
+    boolean isInternetAvailable = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_my);
 
+        client = new AsyncHttpClient();
+
+        // check internet connection
+        checkInternetAvailable();
+
         settingHelper = new SettingHelper(this);
         webURL = Constant.getkWebUrl(settingHelper);
         gson = new Gson();
 
-        //check facebook login
-        if (settingHelper.getUserID().equals("")) {
-            Intent intent = new Intent(this, LoginActivity.class);
-            // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-        } else {
-            Log.d(Constant.cAppTag, "start app with user id:" + settingHelper.getUserID());
-        }
-
         buildGoogleApiClient();
 
         bindWidget();
-        initWebView();
+        //initWebView();
         initWifiManager();
 
         // iBeacon
-        client = new AsyncHttpClient();
         getIBeaconDevices();
 
         initGoogleAnalytic();
 
+    }
+
+    private void checkFacebookLogin() {
+        // check facebook login
+        if (!settingHelper.getFacebookLoginStatus()) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            //finish();
+        } else {
+            Log.d(Constant.cAppTag, "start app with user id:" + settingHelper.getUserID());
+        }
+    }
+
+    private void exitAppWithDialog() {
+        Log.d("exit", "exitAppWithDialog");
+        new AlertDialog.Builder(this)
+                .setTitle("Can not access the Internet")
+                .setMessage("City App need Internet access. Please connect to the Internet.")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        MyActivity.this.finish();
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    private void checkInternetAvailable() {
+        client.get(Constant.kInternetUrl, new AsyncHttpResponseHandler() {
+
+            @Override
+            public void onStart() {
+                // called before request is started
+            }
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] response) {
+                // called when response HTTP status is "200 OK"
+                try {
+                    String str = new String(response, "UTF-8");
+                    if (!str.contains("internet ok")) {
+                        isInternetAvailable = false;
+                        exitAppWithDialog();
+                    }
+                    isInternetAvailable = true;
+                    initWebView();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    isInternetAvailable = false;
+                    exitAppWithDialog();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
+                // called when response HTTP status is "4XX" (eg. 401, 403, 404)
+                isInternetAvailable = false;
+                exitAppWithDialog();
+            }
+
+            @Override
+            public void onRetry(int retryNo) {
+                if (retryNo >= 3) {
+                    isInternetAvailable = false;
+                    exitAppWithDialog();
+                }
+
+            }
+        });
     }
 
     private void initGoogleAnalytic() {
@@ -162,8 +234,24 @@ public class MyActivity extends ActionBarActivity implements
     private void initWifiManager() {
         wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (!wifi.isWifiEnabled()) {
-            Toast.makeText(getApplicationContext(), "wifi is disabled..making it enabled", Toast.LENGTH_LONG).show();
-            wifi.setWifiEnabled(true);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Need WIFI enabled")
+                    .setMessage("Do you want to enable WIFI?")
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(getApplicationContext(), "Enabling WIFI", Toast.LENGTH_LONG).show();
+                            wifi.setWifiEnabled(true);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            MyActivity.this.finish();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+
         }
 
         wifiBroadcastReceiver = new WifiBroadcastReceiver();
@@ -174,7 +262,21 @@ public class MyActivity extends ActionBarActivity implements
     private void initWebView() {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
-        webView.loadUrl(webURL + "?userID=" + settingHelper.getUserID());
+//        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.loadUrl(webURL);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (0 != (getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE))
+            { WebView.setWebContentsDebuggingEnabled(true); }
+        }
+
+//        if (Build.VERSION.SDK_INT >= 19) {
+//            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+//        }
+//        else {
+//            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+//        }
+
         webView.setWebViewClient(new myWebClient());
         webView.addJavascriptInterface((this), "Android");
         webView.setWebChromeClient(new WebChromeClient() {
@@ -184,6 +286,7 @@ public class MyActivity extends ActionBarActivity implements
                 callback.invoke(origin, true, false);
             }
         });
+
 
     }
 
@@ -207,7 +310,7 @@ public class MyActivity extends ActionBarActivity implements
         Log.i("GPS", "ConnectionFailed:" + connectionResult.toString());
         if (mResolvingError) {
             // Already attempting to resolve an error.
-            return;
+            // return;
         } else if (connectionResult.hasResolution()) {
             try {
                 mResolvingError = true;
@@ -252,6 +355,10 @@ public class MyActivity extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+
+        checkFacebookLogin();
+
+        // initWebView();
 
         // check location service enable
         checkLocationEnabled();
