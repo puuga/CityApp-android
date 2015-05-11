@@ -77,8 +77,8 @@ public class FacebookManager {
 
                                 Log.d(facebookLoginTag, "user id: " + id);
                                 Log.d(facebookLoginTag, "user firstname: " + firstname);
-                                Log.d(facebookLoginTag, "user lastname: " + firstname);
-                                Log.d(facebookLoginTag, "user birthday: " + lastname);
+                                Log.d(facebookLoginTag, "user lastname: " + lastname);
+                                Log.d(facebookLoginTag, "user birthday: " + birthDay);
                                 Log.d(facebookLoginTag, "user new birthday: " + newBirthDay);
                                 Log.d(facebookLoginTag, "user gender: " + gender);
                                 Log.d(facebookLoginTag, "user email: " + email);
@@ -94,6 +94,16 @@ public class FacebookManager {
                                 params.put("gender", gender);
                                 params.put("facebook_token", session.getAccessToken());
 
+                                HashMap<String, String> paramMap = new HashMap<String, String>();
+                                paramMap.put("firstname", "firstname");
+                                paramMap.put("lastname", lastname);
+                                paramMap.put("email", email);
+                                paramMap.put("facebook_id", id);
+                                paramMap.put("birthday", newBirthDay);
+                                paramMap.put("gender", gender);
+                                paramMap.put("facebook_token", session.getAccessToken());
+
+
                                 AQuery aq = new AQuery(context);
                                 //aq.ajax(Constant.kAPIBaseUrl,params,JSONObject.class,context,"callback");
                                 aq.ajax(Constant.kAPIBaseUrl, params, JSONObject.class, new AjaxCallback<JSONObject>() {
@@ -107,7 +117,7 @@ public class FacebookManager {
                                             Log.d("callback", status.getCode() + ":" + json.toString());
                                             try {
                                                 String isSuccess = json.getString("result");
-                                                if (isSuccess.equals("register success") || isSuccess.equals("read success")) {
+                                                if (isSuccess.contains("success")) {
                                                     Log.d("callback", "result:"+json.getString("result"));
                                                     Log.d("callback", "accountid:"+json.getString("accountid"));
                                                     Log.d("callback", "firstname:"+json.getString("firstname"));
@@ -143,10 +153,13 @@ public class FacebookManager {
                                                 e.printStackTrace();
                                             }
 
-                                        }else{
+                                        } else {
                                             //ajax error, show error code
                                             //Toast.makeText(aq.getContext(), "Error:" + status.getCode(), Toast.LENGTH_LONG).show();
+                                            Log.d("callback","Error url:" + url);
                                             Log.d("callback","Error:" + status.getCode());
+                                            Log.d("callback","Error:" + status.getMessage());
+                                            Log.d("callback","Error:" + status.toString());
                                         }
 
                                     }

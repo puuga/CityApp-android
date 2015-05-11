@@ -5,6 +5,8 @@
     <string name="app_name">CityApp</string>
     <string name="preference_file_key">settings_file</string>
     <string name="app_id">378262592330122</string>
+    <string name="keen_project_id">5522bb5259949a166903a32d</string>
+    <string name="keen_write_key">d2b65afaca813fb617113b346fdba0fda63f1cd4613e9556fa5f83a66448de9ca0263f33e878f6a6cb4083d0c0ee41e884ed0da6addc38ec9b3900256446e6b518baf88b064447020a05981768ae5fc70db836238b34a0591016da924c8efca16c070403acc21afc7157f9137e67a378</string>
 
 
     <string name="title_activity_login">Login</string>

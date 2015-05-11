@@ -22,17 +22,22 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.appspace.cityapp.helper.CustomLocation;
+import com.appspace.cityapp.helper.KeenHelper;
 import com.appspace.cityapp.helper.SettingHelper;
 import com.appspace.cityapp.helper.WifiData;
 import com.appspace.cityapp.model.IBeacon;
@@ -58,15 +63,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import io.fabric.sdk.android.Fabric;
 
 import static android.net.wifi.WifiManager.calculateSignalLevel;
 
 
-public class MyActivity extends ActionBarActivity implements
+public class MyActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        OnInitListener {
 
     // SharedPreferences
     SettingHelper settingHelper;
@@ -81,9 +88,13 @@ public class MyActivity extends ActionBarActivity implements
     // Bool to track whether the app is already resolving an error
     private boolean mResolvingError = false;
 
+    // keen
+    KeenHelper keenHelper;
+
     // widget
     WebView webView;
     String webURL;
+    ImageView ivBackground;
 
 
     Gson gson;
@@ -102,6 +113,14 @@ public class MyActivity extends ActionBarActivity implements
     // internet
     boolean isInternetAvailable = false;
 
+    // TTS object
+    private TextToSpeech myTTS;
+    // status check code
+    private int MY_DATA_CHECK_CODE = 0;
+    //
+    private boolean canSetLocale = false;
+    private boolean isReadyToSpeech = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,11 +129,16 @@ public class MyActivity extends ActionBarActivity implements
 
         client = new AsyncHttpClient();
 
+        // keen
+        keenHelper = new KeenHelper(this, BuildConfig.DEBUG);
+        keenHelper.initialize();
+        keenHelper.track("StartApp", "App", "CityApp");
+
         // check internet connection
         checkInternetAvailable();
 
         settingHelper = new SettingHelper(this);
-        webURL = Constant.getkWebUrl(settingHelper);
+        // webURL = Constant.getkWebUrl(settingHelper);
         gson = new Gson();
 
         buildGoogleApiClient();
@@ -128,11 +152,31 @@ public class MyActivity extends ActionBarActivity implements
 
         initGoogleAnalytic();
 
+
+        // TTS
+        prepareTTS();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (myTTS != null) {
+            myTTS.shutdown();
+        }
+    }
+
+    private void prepareTTS() {
+        Intent checkIntent = new Intent();
+        checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+        startActivityForResult(checkIntent, MY_DATA_CHECK_CODE);
     }
 
     private void checkFacebookLogin() {
         // check facebook login
         if (!settingHelper.getFacebookLoginStatus()) {
+            keenHelper.track("Facebook", "FacebookLogin", "Login");
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
@@ -143,7 +187,8 @@ public class MyActivity extends ActionBarActivity implements
     }
 
     private void exitAppWithDialog() {
-        Log.d("exit", "exitAppWithDialog");
+        // Log.d("exit", "exitAppWithDialog");
+        keenHelper.track("ExitApp", "reason", "no internet");
         new AlertDialog.Builder(this)
                 .setTitle("Can not access the Internet")
                 .setMessage("City App need Internet access. Please connect to the Internet.")
@@ -153,6 +198,7 @@ public class MyActivity extends ActionBarActivity implements
                     }
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)
                 .show();
     }
 
@@ -174,7 +220,7 @@ public class MyActivity extends ActionBarActivity implements
                         exitAppWithDialog();
                     }
                     isInternetAvailable = true;
-                    initWebView();
+                    // initWebView();
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                     isInternetAvailable = false;
@@ -210,15 +256,15 @@ public class MyActivity extends ActionBarActivity implements
         client.get(Constant.kIBeaconDevices, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.i("JSONObject",response.toString());
+                Log.i("JSONObject", response.toString());
             }
 
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                Log.i("JSONArray",response.toString());
+                Log.i("JSONArray", response.toString());
                 iBeacon = gson.fromJson(response.toString(), IBeacon[].class);
                 readIBeaconSuccess = true;
-                Log.i("iBeacon","There are " + iBeacon.length + " beacons to monitor");
+                Log.i("iBeacon", "There are " + iBeacon.length + " beacons to monitor");
             }
         });
     }
@@ -234,6 +280,7 @@ public class MyActivity extends ActionBarActivity implements
     private void initWifiManager() {
         wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (!wifi.isWifiEnabled()) {
+            keenHelper.track("Device", "setting", "turn on wifi");
 
             new AlertDialog.Builder(this)
                     .setTitle("Need WIFI enabled")
@@ -260,43 +307,42 @@ public class MyActivity extends ActionBarActivity implements
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
+        if (Constant.getkWebUrl(settingHelper).equals(""))
+            return;
+        webURL = Constant.getkWebUrl(settingHelper);
+        keenHelper.track("AppWebview", "url", webURL);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
 //        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webView.loadUrl(webURL);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (0 != (getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE))
-            { WebView.setWebContentsDebuggingEnabled(true); }
+            if (0 != (getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE)) {
+                WebView.setWebContentsDebuggingEnabled(true);
+            }
         }
-
-//        if (Build.VERSION.SDK_INT >= 19) {
-//            webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-//        }
-//        else {
-//            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-//        }
 
         webView.setWebViewClient(new myWebClient());
         webView.addJavascriptInterface((this), "Android");
         webView.setWebChromeClient(new WebChromeClient() {
             public void onGeolocationPermissionsShowPrompt(String origin,
                                                            android.webkit.GeolocationPermissions.Callback callback) {
-                Log.d("geolocation permission", "permission >>>" + origin);
+                // Log.d("geolocation permission", "permission >>>" + origin);
                 callback.invoke(origin, true, false);
             }
         });
 
-
+        webView.loadUrl(webURL);
     }
 
     private void bindWidget() {
         webView = (WebView) findViewById(R.id.webView);
+        ivBackground = (ImageView) findViewById(R.id.ivBackground);
+
+
     }
 
     @Override
     public void onConnected(Bundle bundle) {
-        Log.i("GPS", "connected");
+        // Log.i("GPS", "connected");
         callLastLocation();
     }
 
@@ -307,10 +353,10 @@ public class MyActivity extends ActionBarActivity implements
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.i("GPS", "ConnectionFailed:" + connectionResult.toString());
+        // Log.i("GPS", "ConnectionFailed:" + connectionResult.toString());
         if (mResolvingError) {
             // Already attempting to resolve an error.
-            // return;
+            return;
         } else if (connectionResult.hasResolution()) {
             try {
                 mResolvingError = true;
@@ -358,7 +404,7 @@ public class MyActivity extends ActionBarActivity implements
 
         checkFacebookLogin();
 
-        // initWebView();
+        initWebView();
 
         // check location service enable
         checkLocationEnabled();
@@ -372,6 +418,8 @@ public class MyActivity extends ActionBarActivity implements
         super.onPause();
 
         unregisterReceiver(wifiBroadcastReceiver);
+
+        keenHelper.pauseKeen();
 
     }
 
@@ -427,7 +475,8 @@ public class MyActivity extends ActionBarActivity implements
     // option 2 = sound, no vibrate
     // option 3 = sound, vibrate
     public void showNoti(String title, String content, int option) {
-        Log.d("show noti", "show noti:" + title + "," + content);
+        keenHelper.track("AppNotification", "noti", title + " : " + content);
+//        Log.d("show noti", "show noti:" + title + "," + content);
         Intent intent = new Intent(this, MyActivity.class);
         //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         //intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -507,8 +556,8 @@ public class MyActivity extends ActionBarActivity implements
     public void getWifiData() {
         wifi.startScan();
 
-        Log.d("wifi result", "Scanning...." + size);
-        ArrayList<WifiData> wifiData = new ArrayList<WifiData>();
+//        Log.d("wifi result", "Scanning...." + size);
+        ArrayList<WifiData> wifiData = new ArrayList<>();
         try {
             size = size - 1;
             while (size >= 0) {
@@ -521,7 +570,7 @@ public class MyActivity extends ActionBarActivity implements
                 temp.setFrequency(results.get(size).frequency);
                 temp.setCalLevel(calculateSignalLevel(results.get(size).level, 10));
 
-                Log.d("wifi result", temp.toString());
+//                Log.d("wifi result", temp.toString());
                 wifiData.add(temp);
 
                 size--;
@@ -541,7 +590,7 @@ public class MyActivity extends ActionBarActivity implements
 
         // return to javascript in webview
         final String temp = gson.toJson(wifiData);
-        Log.d("wifi json", temp);
+//        Log.d("wifi json", temp);
         MyActivity.this.runOnUiThread(new Runnable() {
             public void run() {
                 webView.loadUrl("javascript:getWifiDataFromAndroid('"
@@ -577,6 +626,83 @@ public class MyActivity extends ActionBarActivity implements
         return wifiData;
     }
 
+    @Override
+    public void onInit(int initStatus) {
+        if (initStatus == TextToSpeech.SUCCESS) {
+            //myTTS.setLanguage(Locale.US);
+            Log.d("TTS", "TextToSpeech.SUCCESS" + TextToSpeech.SUCCESS);
+            // speech("en", "hello");
+            isReadyToSpeech = true;
+        } else if (initStatus == TextToSpeech.ERROR) {
+            Log.d("TTS", "TextToSpeech.ERROR" + TextToSpeech.ERROR);
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MY_DATA_CHECK_CODE) {
+            if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+                myTTS = new TextToSpeech(this, this);
+            }
+            else {
+                Intent installTTSIntent = new Intent();
+                installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+                startActivity(installTTSIntent);
+            }
+        }
+    }
+
+    @JavascriptInterface
+    public void speech(String language, String message) {
+        switch (language.toLowerCase()) {
+            case "en":
+                if ( myTTS.isLanguageAvailable(Locale.ENGLISH)==TextToSpeech.LANG_AVAILABLE ) {
+                    myTTS.setLanguage(Locale.ENGLISH);
+                    canSetLocale = true;
+                    Log.d("TTS", "setLanguage(Locale.ENGLISH): true");
+                } else {
+                    canSetLocale = false;
+                    Log.d("TTS", "setLanguage(Locale.ENGLISH): false");
+                }
+                break;
+            case "cn":
+                if ( myTTS.isLanguageAvailable(Locale.CHINESE)==TextToSpeech.LANG_AVAILABLE ) {
+                    myTTS.setLanguage(Locale.CHINESE);
+                    canSetLocale = true;
+                    Log.d("TTS", "setLanguage(china): true");
+                } else {
+                    canSetLocale = false;
+                    Log.d("TTS", "setLanguage(china): false");
+                }
+                break;
+            case "th":
+                if ( myTTS.isLanguageAvailable(new Locale("th","TH"))==TextToSpeech.LANG_COUNTRY_AVAILABLE ) {
+                    myTTS.setLanguage(new Locale("th","TH"));
+                    canSetLocale = true;
+                    Log.d("TTS", "setLanguage(th): true");
+                } else {
+                    canSetLocale = false;
+                    Log.d("TTS", "setLanguage(th): false");
+                }
+                break;
+            default:
+                canSetLocale = false;
+                Log.d("TTS", "no Language(): "+language);
+        }
+
+        if (canSetLocale && isReadyToSpeech) {
+            speech(message);
+        }
+    }
+
+    private void speech(String message) {
+        if (Build.VERSION.SDK_INT >= 21) {
+            myTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null, null);
+        } else {
+            myTTS.speak(message, TextToSpeech.QUEUE_FLUSH, null);
+        }
+
+    }
+
     private class myWebClient extends WebViewClient {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -598,6 +724,8 @@ public class MyActivity extends ActionBarActivity implements
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
+            Log.d("onPageFinished", url);
+            ivBackground.setVisibility(View.GONE);
         }
     }
 

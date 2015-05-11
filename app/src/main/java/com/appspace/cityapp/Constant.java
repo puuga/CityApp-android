@@ -24,7 +24,9 @@ public class Constant {
     public static final String kWebTest = "file:///android_asset/test.html";
 
     public static final String getkWebUrl(SettingHelper settingHelper) {
-        return kWebURL+"?userId="+settingHelper.getUserID()+"&idAccess=rlsRoomlinksaas2011&userID="+settingHelper.getUserID();
+        if (settingHelper.getUserID().equals(""))
+            return "";
+        return kWebURL+"?userId="+settingHelper.getUserID()+"&idAccess=rlsRoomlinksaas2011";
 //        return kWebTest;
     }
 
