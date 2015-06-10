@@ -22,12 +22,12 @@ android {
         applicationId "com.appspace.cityapp"
         minSdkVersion 18
         targetSdkVersion 21
-        versionCode 18
-        versionName '1.1.17'
+        versionCode 19
+        versionName '1.1.18'
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -41,7 +41,7 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:3.23.1'
     compile 'com.google.android.gms:play-services:7.0.0'
     compile 'com.loopj.android:android-async-http:1.4.6'
-    compile('com.crashlytics.sdk.android:crashlytics:2.2.3@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.3.2@aar') {
         transitive = true;
     }
     compile 'com.google.code.gson:gson:2.3.1'

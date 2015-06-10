@@ -220,7 +220,7 @@ public class MyActivity extends AppCompatActivity implements
                         exitAppWithDialog();
                     }
                     isInternetAvailable = true;
-                    // initWebView();
+                    initWebView();
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                     isInternetAvailable = false;
@@ -336,8 +336,6 @@ public class MyActivity extends AppCompatActivity implements
     private void bindWidget() {
         webView = (WebView) findViewById(R.id.webView);
         ivBackground = (ImageView) findViewById(R.id.ivBackground);
-
-
     }
 
     @Override
@@ -404,7 +402,7 @@ public class MyActivity extends AppCompatActivity implements
 
         checkFacebookLogin();
 
-        initWebView();
+        //initWebView();
 
         // check location service enable
         checkLocationEnabled();
@@ -707,6 +705,7 @@ public class MyActivity extends AppCompatActivity implements
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
+            Log.d("onPageStarted", url);
         }
 
         @Override
