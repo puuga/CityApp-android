@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -53,6 +54,7 @@ import com.google.gson.Gson;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.parse.ParseInstallation;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -117,14 +119,22 @@ public class MyActivity extends AppCompatActivity implements
     private TextToSpeech myTTS;
     // status check code
     private int MY_DATA_CHECK_CODE = 0;
-    //
-    private boolean canSetLocale = false;
     private boolean isReadyToSpeech = false;
+
+    public static GoogleAnalytics analytics;
+    public static Tracker tracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
+
+        initParse();
+
+        initGoogleAnalytics();
+
+
+
         setContentView(R.layout.activity_my);
 
         client = new AsyncHttpClient();
@@ -150,12 +160,51 @@ public class MyActivity extends AppCompatActivity implements
         // iBeacon
         getIBeaconDevices();
 
-        initGoogleAnalytic();
-
 
         // TTS
         prepareTTS();
 
+    }
+
+    private void initGoogleAnalytics() {
+        analytics = GoogleAnalytics.getInstance(this);
+        analytics.setLocalDispatchPeriod(1800);
+
+        tracker = analytics.newTracker("UA-40963799-5");
+        tracker.enableExceptionReporting(true);
+        tracker.enableAutoActivityTracking(true);
+
+        tracker.setScreenName("main screen");
+
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory("UI")
+                .setAction("load")
+                .setLabel("main screen")
+                .build());
+    }
+
+    private void initParse() {
+
+//        try {
+//            Parse.initialize(this, "PdbY0J1f0LBXJoEWNeID0nIiVlO7b5dpcVJwVicd", "b3SyEuAzKeJPTn4xi7FCPMqucpokyxex42rA7c7j");
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Log.e("com.parse.push", "Parse already init");
+//        }
+
+
+        ParseInstallation.getCurrentInstallation().saveInBackground();
+
+//        ParsePush.subscribeInBackground("", new SaveCallback() {
+//            @Override
+//            public void done(ParseException e) {
+//                if (e == null) {
+//                    Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
+//                } else {
+//                    Log.e("com.parse.push", "failed to subscribe for push", e);
+//                }
+//            }
+//        });
     }
 
     @Override
@@ -244,12 +293,6 @@ public class MyActivity extends AppCompatActivity implements
 
             }
         });
-    }
-
-    private void initGoogleAnalytic() {
-        Tracker t = ((GoogleAnalyticsApp) getApplication()).getTracker(GoogleAnalyticsApp.TrackerName.APP_TRACKER);
-        t.setScreenName("Home");
-        t.send(new HitBuilders.AppViewBuilder().build());
     }
 
     private void getIBeaconDevices() {
@@ -618,9 +661,10 @@ public class MyActivity extends AppCompatActivity implements
             }
         }
         wifiData.clear();
-        for (WifiData arr : arrs) {
-            wifiData.add(arr);
-        }
+//        for (WifiData arr : arrs) {
+//            wifiData.add(arr);
+//        }
+        Collections.addAll(wifiData, arrs);
         return wifiData;
     }
 
@@ -651,6 +695,7 @@ public class MyActivity extends AppCompatActivity implements
 
     @JavascriptInterface
     public void speech(String language, String message) {
+        boolean canSetLocale = false;
         switch (language.toLowerCase()) {
             case "en":
                 if ( myTTS.isLanguageAvailable(Locale.ENGLISH)==TextToSpeech.LANG_AVAILABLE ) {
@@ -759,6 +804,7 @@ public class MyActivity extends AppCompatActivity implements
     public static class ErrorDialogFragment extends DialogFragment {
         public ErrorDialogFragment() { }
 
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Get the error code and retrieve the appropriate dialog

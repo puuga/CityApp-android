@@ -30,23 +30,38 @@ public class LoginActivity extends Activity {
     // SharedPreferences
     SettingHelper settingHelper;
 
+    public static GoogleAnalytics analytics;
+    public static Tracker tracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        initGoogleAnalytics();
 
         printHashKey();
         bindSharedPreferences();
 
         bindWidget();
 
-        initGoogleAnalytic();
     }
 
-    private void initGoogleAnalytic() {
-        Tracker t = ((GoogleAnalyticsApp) getApplication()).getTracker(GoogleAnalyticsApp.TrackerName.APP_TRACKER);
-        t.setScreenName("Login");
-        t.send(new HitBuilders.AppViewBuilder().build());
+    private void initGoogleAnalytics() {
+        analytics = GoogleAnalytics.getInstance(this);
+        analytics.setLocalDispatchPeriod(1800);
+
+        tracker = analytics.newTracker("UA-40963799-5");
+        tracker.enableExceptionReporting(true);
+        tracker.enableAutoActivityTracking(true);
+
+        tracker.setScreenName("login screen");
+
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory("UI")
+                .setAction("load")
+                .setLabel("login screen")
+                .build());
     }
 
     @Override

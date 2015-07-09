@@ -1,26 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="TypographyDashes">
-    <string name="ga_trackingId">UA-57749625-1</string>
+<resources>
+    <!-- End current session if app sleeps for a period of time -->
+    <integer name="ga_sessionTimeout">300</integer>
 
+    <!-- Enable automatic Activity measurement -->
     <bool name="ga_autoActivityTracking">true</bool>
 
-    <bool name="ga_reportUncaughtExceptions">true</bool>
+    <!--  The property id associated with this analytics tracker -->
+    <string name="ga_trackingId">UA-40963799-5</string>
 
-    <string name="ga_appName">CityApp</string>
-
-    <bool name="ga_debug">true</bool>
-
-    <item name="ga_dispatchPeriod" format="integer" type="integer">120</item>
-
-    <string name="ga_sampleFrequency">90</string>
-
-    <bool name="ga_anonymizeIp">true</bool>
-
-    <bool name="ga_dryRun">false</bool>
-
-    <string name="ga_sampleFrequency">100.0</string>
-
-    <integer name="ga_sessionTimeout">-1</integer>
-    <string name="com.appspace.cityapp">MyActivity</string>
+    <!--
+      See Project Structure -> Analytics -> Google Analytics -> Learn More
+      to learn more about configuring this file.
+    -->
 </resources>
