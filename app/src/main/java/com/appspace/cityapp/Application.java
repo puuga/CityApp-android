@@ -2,16 +2,22 @@ package com.appspace.cityapp;
 
 import android.util.Log;
 
+import com.appspace.cityapp.helper.GeofenceHelper;
 import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParsePush;
 import com.parse.PushService;
 import com.parse.SaveCallback;
 
+import pl.charmas.android.reactivelocation.ReactiveLocationProvider;
+
 /**
  * Created by siwaweswongcharoen on 7/2/2015 AD.
  */
 public class Application extends android.app.Application {
+
+    ReactiveLocationProvider locationProvider;
+
     public Application() {
     }
 
@@ -19,6 +25,19 @@ public class Application extends android.app.Application {
     public void onCreate() {
         super.onCreate();
 
+        initParse();
+
+        initGeofences();
+
+    }
+
+    private void initGeofences() {
+        locationProvider = new ReactiveLocationProvider(getApplicationContext());
+        GeofenceHelper geofenceHelper = new GeofenceHelper(locationProvider, this);
+        geofenceHelper.activeGeofence();
+    }
+
+    private void initParse() {
         // Initialize the Parse SDK.
         Parse.initialize(this, "PdbY0J1f0LBXJoEWNeID0nIiVlO7b5dpcVJwVicd", "b3SyEuAzKeJPTn4xi7FCPMqucpokyxex42rA7c7j");
 

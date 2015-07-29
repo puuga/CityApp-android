@@ -110,6 +110,8 @@
                 <category android:name="com.appspace.cityapp" />
             </intent-filter>
         </receiver>
+
+        <receiver android:name=".geo.GeofenceBroadcastReceiver" />
     </application>
 
 </manifest>
