@@ -2,7 +2,7 @@
 <resources>
 
     <!-- app -->
-    <string name="app_name">CityApp</string>
+    <string name="app_name">CityIoT</string>
     <string name="preference_file_key">settings_file</string>
     <string name="app_id">378262592330122</string>
     <string name="keen_project_id">5522bb5259949a166903a32d</string>
