@@ -73,7 +73,17 @@ public class FacebookManager {
                                     newBirthDay = "0000-00-00";
                                 }
                                 String gender = user.getProperty("gender").toString();
-                                String email = user.getProperty("email").toString();
+                                String email = null;
+                                try {
+                                    email = user.getProperty("email").toString();
+                                    Log.d(facebookLoginTag, "email : getProperty");
+                                } catch (NullPointerException e) {
+                                    email = user.asMap().get("email").toString();
+                                    Log.d(facebookLoginTag, "email: asMap");
+                                }
+
+
+
 
                                 Log.d(facebookLoginTag, "user id: " + id);
                                 Log.d(facebookLoginTag, "user firstname: " + firstname);

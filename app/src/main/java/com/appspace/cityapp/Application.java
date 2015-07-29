@@ -39,7 +39,9 @@ public class Application extends android.app.Application {
 
     private void initParse() {
         // Initialize the Parse SDK.
+        Parse.enableLocalDatastore(this);
         Parse.initialize(this, "PdbY0J1f0LBXJoEWNeID0nIiVlO7b5dpcVJwVicd", "b3SyEuAzKeJPTn4xi7FCPMqucpokyxex42rA7c7j");
+//        Parse.initialize(this, "PbyxNX4PkKSc1DPftcCvcFsGXuN03VHNM68mqWCX", "4jXn7ks10tE3mgMyrKHoBCKLKnI4eqMR7YXSuoNI");
 
         // Specify an Activity to handle all pushes by default.
         PushService.setDefaultPushCallback(this, MyActivity.class);
