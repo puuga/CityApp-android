@@ -133,8 +133,6 @@ public class MyActivity extends AppCompatActivity implements
 
         initGoogleAnalytics();
 
-
-
         setContentView(R.layout.activity_my);
 
         client = new AsyncHttpClient();
@@ -154,12 +152,12 @@ public class MyActivity extends AppCompatActivity implements
         buildGoogleApiClient();
 
         bindWidget();
+
         //initWebView();
         initWifiManager();
 
         // iBeacon
         getIBeaconDevices();
-
 
         // TTS
         prepareTTS();
@@ -184,27 +182,7 @@ public class MyActivity extends AppCompatActivity implements
     }
 
     private void initParse() {
-
-//        try {
-//            Parse.initialize(this, "PdbY0J1f0LBXJoEWNeID0nIiVlO7b5dpcVJwVicd", "b3SyEuAzKeJPTn4xi7FCPMqucpokyxex42rA7c7j");
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Log.e("com.parse.push", "Parse already init");
-//        }
-
-
         ParseInstallation.getCurrentInstallation().saveInBackground();
-
-//        ParsePush.subscribeInBackground("", new SaveCallback() {
-//            @Override
-//            public void done(ParseException e) {
-//                if (e == null) {
-//                    Log.d("com.parse.push", "successfully subscribed to the broadcast channel.");
-//                } else {
-//                    Log.e("com.parse.push", "failed to subscribe for push", e);
-//                }
-//            }
-//        });
     }
 
     @Override
