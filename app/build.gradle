@@ -22,8 +22,8 @@ android {
         applicationId "com.appspace.cityapp"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 24
-        versionName '1.4'
+        versionCode 26
+        versionName '1.4.2'
     }
     buildTypes {
         release {
@@ -41,15 +41,15 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.5.0@aar') {
         transitive = true;
     }
-    compile 'com.parse.bolts:bolts-android:1.2.0'
+    compile 'com.parse.bolts:bolts-android:1.2.1'
     compile 'com.google.android.gms:play-services-location:7.5.0'
-    compile 'com.loopj.android:android-async-http:1.4.6'
+    compile 'com.loopj.android:android-async-http:1.4.8'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'io.keen:keen-client-api-android:2.1.1'
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.android.support:support-v4:22.2.1'
     compile 'com.google.android.gms:play-services-analytics:7.5.0'
-    compile 'pl.charmas.android:android-reactive-location:0.6'
+    compile 'pl.charmas.android:android-reactive-location:0.7'
     compile 'io.reactivex:rxjava:1.0.13'
     compile 'com.facebook.android:facebook-android-sdk:4.4.0'
 }

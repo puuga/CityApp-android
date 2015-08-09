@@ -7,6 +7,7 @@ import java.util.List;
  * Created by siwaweswongcharoen on 7/22/2015 AD.
  */
 public class StoreLocation {
+    public static  final String LOCATION_ID = "location_id";
     public String id;
     public String name;
     public double latitude;

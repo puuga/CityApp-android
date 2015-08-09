@@ -97,7 +97,7 @@ public class GeofenceHelper {
 
         for (StoreLocation storeL : storeLocationList) {
             Geofence geofence = new Geofence.Builder()
-                    .setRequestId(storeL.name)
+                    .setRequestId(storeL.id+","+storeL.name)
                     .setCircularRegion(storeL.latitude, storeL.longitude, storeL.radius)
                     .setExpirationDuration(Geofence.NEVER_EXPIRE)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT)

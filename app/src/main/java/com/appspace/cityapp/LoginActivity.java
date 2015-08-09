@@ -55,6 +55,7 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        bindSharedPreferences();
         initFacebookSdk();
 
         setContentView(R.layout.activity_login);
@@ -62,8 +63,6 @@ public class LoginActivity extends Activity {
         printHashKey();
 
         initGoogleAnalytics();
-
-        bindSharedPreferences();
 
         bindWidget();
 
@@ -200,7 +199,7 @@ public class LoginActivity extends Activity {
                                 birthDay = object.getString("birthday");
                                 temp = birthDay.split("/");
                                 newBirthDay = temp[2] + "-" + temp[0] + "-" + temp[1];
-                            } catch (NullPointerException e) {
+                            } catch (JSONException | NullPointerException e) {
                                 newBirthDay = "0000-00-00";
                             }
                             Log.d("fb_info", "firstname: " + object.getString("first_name"));

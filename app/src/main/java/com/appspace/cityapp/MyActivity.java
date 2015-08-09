@@ -37,6 +37,7 @@ import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.appspace.cityapp.geo.StoreLocation;
 import com.appspace.cityapp.helper.CustomLocation;
 import com.appspace.cityapp.helper.KeenHelper;
 import com.appspace.cityapp.helper.SettingHelper;
@@ -162,6 +163,8 @@ public class MyActivity extends AppCompatActivity implements
         // TTS
         prepareTTS();
 
+        webURL = Constant.getkWebUrl(settingHelper);
+        initWebView();
     }
 
     private void initGoogleAnalytics() {
@@ -247,7 +250,8 @@ public class MyActivity extends AppCompatActivity implements
                         exitAppWithDialog();
                     }
                     isInternetAvailable = true;
-                    initWebView();
+//                    initWebView();
+                    loadWebView(webURL);
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                     isInternetAvailable = false;
@@ -330,8 +334,7 @@ public class MyActivity extends AppCompatActivity implements
     private void initWebView() {
         if (Constant.getkWebUrl(settingHelper).equals(""))
             return;
-        webURL = Constant.getkWebUrl(settingHelper);
-        keenHelper.track("AppWebview", "url", webURL);
+
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setGeolocationEnabled(true);
 //        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -351,6 +354,11 @@ public class MyActivity extends AppCompatActivity implements
             }
         });
 
+        loadWebView(webURL);
+    }
+
+    private void loadWebView(String url) {
+        keenHelper.track("AppWebview", "url", webURL);
         webView.loadUrl(webURL);
     }
 
@@ -430,6 +438,24 @@ public class MyActivity extends AppCompatActivity implements
 
         registerReceiver(wifiBroadcastReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
+        getExtra();
+
+    }
+
+    private void getExtra() {
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            if (extras.containsKey(StoreLocation.LOCATION_ID) && extras.getString(StoreLocation.LOCATION_ID, "") != "") {
+                String temp = Constant.getkWebUrl(settingHelper) + "&geo_id=" + extras.getString(StoreLocation.LOCATION_ID);
+                Toast.makeText(this, temp, Toast.LENGTH_LONG).show();
+                keenHelper.track("AppWebview", "geo url", temp);
+//                Log.d("geourl", temp);
+                loadWebView(temp);
+
+                // clear
+                extras.putString(StoreLocation.LOCATION_ID, "");
+            }
+        }
     }
 
     @Override
@@ -662,8 +688,7 @@ public class MyActivity extends AppCompatActivity implements
         if (requestCode == MY_DATA_CHECK_CODE) {
             if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
                 myTTS = new TextToSpeech(this, this);
-            }
-            else {
+            } else {
                 Intent installTTSIntent = new Intent();
                 installTTSIntent.setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
                 startActivity(installTTSIntent);
@@ -676,7 +701,7 @@ public class MyActivity extends AppCompatActivity implements
         boolean canSetLocale = false;
         switch (language.toLowerCase()) {
             case "en":
-                if ( myTTS.isLanguageAvailable(Locale.ENGLISH)==TextToSpeech.LANG_AVAILABLE ) {
+                if (myTTS.isLanguageAvailable(Locale.ENGLISH) == TextToSpeech.LANG_AVAILABLE) {
                     myTTS.setLanguage(Locale.ENGLISH);
                     canSetLocale = true;
                     Log.d("TTS", "setLanguage(Locale.ENGLISH): true");
@@ -686,7 +711,7 @@ public class MyActivity extends AppCompatActivity implements
                 }
                 break;
             case "cn":
-                if ( myTTS.isLanguageAvailable(Locale.CHINESE)==TextToSpeech.LANG_AVAILABLE ) {
+                if (myTTS.isLanguageAvailable(Locale.CHINESE) == TextToSpeech.LANG_AVAILABLE) {
                     myTTS.setLanguage(Locale.CHINESE);
                     canSetLocale = true;
                     Log.d("TTS", "setLanguage(china): true");
@@ -696,8 +721,8 @@ public class MyActivity extends AppCompatActivity implements
                 }
                 break;
             case "th":
-                if ( myTTS.isLanguageAvailable(new Locale("th","TH"))==TextToSpeech.LANG_COUNTRY_AVAILABLE ) {
-                    myTTS.setLanguage(new Locale("th","TH"));
+                if (myTTS.isLanguageAvailable(new Locale("th", "TH")) == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                    myTTS.setLanguage(new Locale("th", "TH"));
                     canSetLocale = true;
                     Log.d("TTS", "setLanguage(th): true");
                 } else {
@@ -707,7 +732,7 @@ public class MyActivity extends AppCompatActivity implements
                 break;
             default:
                 canSetLocale = false;
-                Log.d("TTS", "no Language(): "+language);
+                Log.d("TTS", "no Language(): " + language);
         }
 
         if (canSetLocale && isReadyToSpeech) {
@@ -780,7 +805,8 @@ public class MyActivity extends AppCompatActivity implements
 
     /* A fragment to display an error dialog */
     public static class ErrorDialogFragment extends DialogFragment {
-        public ErrorDialogFragment() { }
+        public ErrorDialogFragment() {
+        }
 
         @NonNull
         @Override
@@ -793,7 +819,7 @@ public class MyActivity extends AppCompatActivity implements
 
         @Override
         public void onDismiss(DialogInterface dialog) {
-            ((MyActivity)getActivity()).onDialogDismissed();
+            ((MyActivity) getActivity()).onDialogDismissed();
         }
     }
 

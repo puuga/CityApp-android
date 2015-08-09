@@ -20,7 +20,7 @@ public class LoginManager {
             birthDay = object.getString("birthday");
             temp = birthDay.split("/");
             newBirthDay = temp[2] + "-" + temp[0] + "-" + temp[1];
-        } catch (NullPointerException e) {
+        } catch (JSONException | NullPointerException e) {
             newBirthDay = "0000-00-00";
         }
 

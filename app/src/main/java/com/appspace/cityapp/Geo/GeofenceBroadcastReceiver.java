@@ -25,16 +25,19 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         GeofencingEvent event = GeofencingEvent.fromIntent(intent);
         String transition = mapTransition(event.getGeofenceTransition());
-        String names = getGeofenceTransitionDetails(event.getTriggeringGeofences());
+        String[] temp = getGeofenceTransitionDetails(event.getTriggeringGeofences()).split(",");
+        String id = temp[0];
+        String name = temp[1];
 
         Intent myIntent = new Intent(context, MyActivity.class);
+        myIntent.putExtra(StoreLocation.LOCATION_ID, id);
         PendingIntent activity = PendingIntent.getActivity(context, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(transition + " " + names)
-                .setContentText(names)
+                .setContentTitle(transition + " " + name)
+                .setContentText(name)
                 .setTicker("City Hello")
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setAutoCancel(true)
