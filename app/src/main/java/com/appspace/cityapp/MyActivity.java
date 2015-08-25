@@ -171,7 +171,7 @@ public class MyActivity extends AppCompatActivity implements
         analytics = GoogleAnalytics.getInstance(this);
         analytics.setLocalDispatchPeriod(1800);
 
-        tracker = analytics.newTracker("UA-40963799-5");
+        tracker = analytics.newTracker(Constant.GA_ID);
         tracker.enableExceptionReporting(true);
         tracker.enableAutoActivityTracking(true);
 

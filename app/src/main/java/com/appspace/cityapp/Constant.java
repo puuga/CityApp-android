@@ -7,6 +7,10 @@ import com.appspace.cityapp.helper.SettingHelper;
  */
 public class Constant {
     public static final String cAppTag = String.valueOf(R.string.app_name);
+    public static final String GA_ID = String.valueOf("UA-40963799-5");
+
+    public static final String PARSE_CHANNEL_DEBUG = String.valueOf("DEBUG");
+
     public static final String setting_facebook_login_status_boolean = "setting_facebook_login_status_boolean";
     public static final String facebook_token = "facebook_token";
     public static final String userID = "userID";

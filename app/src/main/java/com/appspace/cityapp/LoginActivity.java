@@ -12,6 +12,7 @@ import android.util.Log;
 
 import com.appspace.cityapp.apimanager.LoginManager;
 import com.appspace.cityapp.helper.SettingHelper;
+import com.crashlytics.android.Crashlytics;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -36,6 +37,8 @@ import org.json.JSONObject;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
+import io.fabric.sdk.android.Fabric;
+
 
 public class LoginActivity extends Activity {
 
@@ -57,6 +60,7 @@ public class LoginActivity extends Activity {
 
         bindSharedPreferences();
         initFacebookSdk();
+        Fabric.with(this, new Crashlytics());
 
         setContentView(R.layout.activity_login);
 
@@ -100,7 +104,7 @@ public class LoginActivity extends Activity {
         analytics = GoogleAnalytics.getInstance(this);
         analytics.setLocalDispatchPeriod(1800);
 
-        tracker = analytics.newTracker("UA-40963799-5");
+        tracker = analytics.newTracker(Constant.GA_ID);
         tracker.enableExceptionReporting(true);
         tracker.enableAutoActivityTracking(true);
 
