@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import com.appspace.cityapp.MyActivity;
 import com.appspace.cityapp.R;
+import com.appspace.cityapp.helper.SettingHelper;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
@@ -29,6 +30,8 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         String id = temp[0];
         String name = temp[1];
 
+        geoTrack(context,id,transition);
+
         Intent myIntent = new Intent(context, MyActivity.class);
         myIntent.putExtra(StoreLocation.LOCATION_ID, id);
         PendingIntent activity = PendingIntent.getActivity(context, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -44,7 +47,15 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
                 .setOnlyAlertOnce(true)
                 .setContentIntent(activity)
                 .build();
-        nm.notify(0, notification);
+        nm.notify(Integer.parseInt(id), notification);
+    }
+
+    private void geoTrack(Context context, String locationId, String action) {
+        SettingHelper settingHelper = new SettingHelper(context);
+        String userId = settingHelper.getUserID();
+        if (!userId.equals("")) {
+            GeoTracker.track(locationId,userId,action);
+        }
     }
 
     private String getGeofenceTransitionDetails( List<Geofence> triggeringGeofences) {
