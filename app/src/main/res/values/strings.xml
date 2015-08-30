@@ -10,5 +10,6 @@
 
 
     <string name="title_activity_login">Login</string>
+    <string name="city_hello">City Hello</string>
 
 </resources>

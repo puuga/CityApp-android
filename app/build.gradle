@@ -21,9 +21,9 @@ android {
     defaultConfig {
         applicationId "com.appspace.cityapp"
         minSdkVersion 18
-        targetSdkVersion 23
-        versionCode 29
-        versionName '1.6'
+        targetSdkVersion 22
+        versionCode 31
+        versionName '1.6.2'
     }
     buildTypes {
         release {

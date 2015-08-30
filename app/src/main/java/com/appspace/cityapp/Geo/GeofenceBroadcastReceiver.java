@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 
 import com.appspace.cityapp.MyActivity;
 import com.appspace.cityapp.R;
@@ -15,7 +14,6 @@ import com.appspace.cityapp.helper.SettingHelper;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,58 +23,106 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         GeofencingEvent event = GeofencingEvent.fromIntent(intent);
-        String transition = mapTransition(event.getGeofenceTransition());
-        String[] temp = getGeofenceTransitionDetails(event.getTriggeringGeofences()).split(",");
-        String id = temp[0];
-        String name = temp[1];
 
-        geoTrack(context,id,transition);
+        LocationHelper locationHelper = LocationHelper.getInstance(event);
 
+        geoTrack(context, locationHelper);
+
+        makeNotification(context, locationHelper, event.getTriggeringGeofences());
+    }
+
+    private void makeNotification(Context context, LocationHelper locationHelper, List<Geofence> geofences) {
         Intent myIntent = new Intent(context, MyActivity.class);
-        myIntent.putExtra(StoreLocation.LOCATION_ID, id);
+        myIntent.putExtra(StoreLocation.LOCATION_ID, locationHelper.getId());
         PendingIntent activity = PendingIntent.getActivity(context, 0, myIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(transition + " " + name)
-                .setContentText(name)
-                .setTicker("City Hello")
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setAutoCancel(true)
-                .setOnlyAlertOnce(true)
-                .setContentIntent(activity)
-                .build();
-        nm.notify(Integer.parseInt(id), notification);
+        Notification notification = null;
+        if (geofences.size() == 1) {
+            notification = buildSingleNotification(context, locationHelper, activity);
+        } else if (geofences.size() > 1){
+            notification = buildMultipleNotification(context, locationHelper, activity, geofences);
+        }
+        nm.notify(0, notification);
     }
 
-    private void geoTrack(Context context, String locationId, String action) {
+    private Notification buildMultipleNotification(Context context, LocationHelper locationHelper, PendingIntent activity, List<Geofence> geofences) {
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle(geofences.size() + " contract locations");
+        inboxStyle.setSummaryText("");
+        for (Geofence geofence : geofences) {
+            String[] temp = geofence.getRequestId().split(",");
+            String id = temp[0];
+            String name = temp[1];
+            inboxStyle.addLine(name);
+        }
+        Notification notification = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            notification = new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                    .setContentText(locationHelper.getName())
+                    .setCategory(Notification.CATEGORY_PROMO)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setTicker(context.getText(R.string.city_hello))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setContentIntent(activity)
+                    .setStyle(inboxStyle)
+                    .build();
+        } else {
+            notification = new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                    .setContentText(locationHelper.getName())
+                    .setTicker(context.getText(R.string.city_hello))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setContentIntent(activity)
+                    .setStyle(inboxStyle)
+                    .build();
+        }
+        return notification;
+    }
+
+    private Notification buildSingleNotification(Context context, LocationHelper locationHelper, PendingIntent activity) {
+        Notification notification = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            notification = new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                    .setContentText(locationHelper.getName())
+                    .setCategory(Notification.CATEGORY_PROMO)
+                    .setVisibility(Notification.VISIBILITY_PUBLIC)
+                    .setTicker(context.getText(R.string.city_hello))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setContentIntent(activity)
+                    .build();
+        } else {
+            notification = new NotificationCompat.Builder(context)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                    .setContentText(locationHelper.getName())
+                    .setTicker(context.getText(R.string.city_hello))
+                    .setDefaults(Notification.DEFAULT_ALL)
+                    .setAutoCancel(true)
+                    .setOnlyAlertOnce(true)
+                    .setContentIntent(activity)
+                    .build();
+        }
+        return notification;
+    }
+
+    private void geoTrack(Context context, LocationHelper locationHelper) {
         SettingHelper settingHelper = new SettingHelper(context);
         String userId = settingHelper.getUserID();
         if (!userId.equals("")) {
-            GeoTracker.track(locationId,userId,action);
+            GeoTracker.track(locationHelper.getId(), userId, locationHelper.getTransition());
         }
     }
 
-    private String getGeofenceTransitionDetails( List<Geofence> triggeringGeofences) {
-
-        // Get the name of each geofence that was triggered.
-        ArrayList<String> triggeringGeofencesIdsList = new ArrayList<>();
-        for (Geofence geofence : triggeringGeofences) {
-            triggeringGeofencesIdsList.add(geofence.getRequestId());
-        }
-
-        return TextUtils.join(", ", triggeringGeofencesIdsList);
-    }
-
-    private String mapTransition(int event) {
-        switch (event) {
-            case Geofence.GEOFENCE_TRANSITION_ENTER:
-                return "ENTER";
-            case Geofence.GEOFENCE_TRANSITION_EXIT:
-                return "EXIT";
-            default:
-                return "UNKNOWN";
-        }
-    }
 }

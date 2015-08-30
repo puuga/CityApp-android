@@ -445,15 +445,21 @@ public class MyActivity extends AppCompatActivity implements
     private void getExtra() {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            if (extras.containsKey(StoreLocation.LOCATION_ID) && extras.getString(StoreLocation.LOCATION_ID, "") != "") {
-                String temp = Constant.getkWebUrl(settingHelper) + "&geo_id=" + extras.getString(StoreLocation.LOCATION_ID);
-                Toast.makeText(this, temp, Toast.LENGTH_LONG).show();
-                keenHelper.track("AppWebview", "geo url", temp);
-//                Log.d("geourl", temp);
-                loadWebView(temp);
+            try {
+                if (extras.containsKey(StoreLocation.LOCATION_ID) && !extras.getString(StoreLocation.LOCATION_ID).equals("")) {
+                    String temp = Constant.getkWebUrl(settingHelper) + "&geo_id=" + extras.getString(StoreLocation.LOCATION_ID);
+                    Toast.makeText(this, temp, Toast.LENGTH_LONG).show();
+                    keenHelper.track("AppWebview", "geo url", temp);
+                    //                Log.d("geourl", temp);
+                    loadWebView(temp);
+                    webURL = temp;
+                    Log.d("load url",temp);
 
-                // clear
-                extras.putString(StoreLocation.LOCATION_ID, "");
+                    // clear
+                    extras.putString(StoreLocation.LOCATION_ID, "");
+                }
+            } catch (NullPointerException e) {
+                loadWebView(webURL);
             }
         }
     }
