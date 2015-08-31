@@ -56,65 +56,45 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
             String name = temp[1];
             inboxStyle.addLine(name);
         }
-        Notification notification = null;
+
+        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                .setContentText(locationHelper.getName())
+                .setTicker(context.getText(R.string.city_hello))
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setContentIntent(activity)
+                .setStyle(inboxStyle);
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            notification = new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
-                    .setContentText(locationHelper.getName())
+            notificationCompat
                     .setCategory(Notification.CATEGORY_PROMO)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setTicker(context.getText(R.string.city_hello))
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setContentIntent(activity)
-                    .setStyle(inboxStyle)
-                    .build();
-        } else {
-            notification = new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
-                    .setContentText(locationHelper.getName())
-                    .setTicker(context.getText(R.string.city_hello))
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setContentIntent(activity)
-                    .setStyle(inboxStyle)
-                    .build();
+                    .setVisibility(Notification.VISIBILITY_PUBLIC);
         }
-        return notification;
+
+        return notificationCompat.build();
     }
 
     private Notification buildSingleNotification(Context context, LocationHelper locationHelper, PendingIntent activity) {
-        Notification notification = null;
+        NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(context)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                .setContentText(locationHelper.getName())
+                .setTicker(context.getText(R.string.city_hello))
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setAutoCancel(true)
+                .setOnlyAlertOnce(true)
+                .setContentIntent(activity);
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-            notification = new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
-                    .setContentText(locationHelper.getName())
+            notificationCompat
                     .setCategory(Notification.CATEGORY_PROMO)
-                    .setVisibility(Notification.VISIBILITY_PUBLIC)
-                    .setTicker(context.getText(R.string.city_hello))
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setContentIntent(activity)
-                    .build();
-        } else {
-            notification = new NotificationCompat.Builder(context)
-                    .setSmallIcon(R.drawable.ic_launcher)
-                    .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
-                    .setContentText(locationHelper.getName())
-                    .setTicker(context.getText(R.string.city_hello))
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setAutoCancel(true)
-                    .setOnlyAlertOnce(true)
-                    .setContentIntent(activity)
-                    .build();
+                    .setVisibility(Notification.VISIBILITY_PUBLIC);
         }
-        return notification;
+
+        return notificationCompat.build();
     }
 
     private void geoTrack(Context context, LocationHelper locationHelper) {
