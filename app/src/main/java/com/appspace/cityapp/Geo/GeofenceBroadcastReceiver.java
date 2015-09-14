@@ -6,6 +6,8 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.NotificationCompat;
 
 import com.appspace.cityapp.MyActivity;
@@ -49,7 +51,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     private Notification buildMultipleNotification(Context context, LocationHelper locationHelper, PendingIntent activity, List<Geofence> geofences) {
         NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle(geofences.size() + " contract locations");
-        inboxStyle.setSummaryText("");
+        inboxStyle.setSummaryText(geofences.size() + " contract locations");
         for (Geofence geofence : geofences) {
             String[] temp = geofence.getRequestId().split(",");
             String id = temp[0];
@@ -59,7 +61,8 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
 
         NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
+                .setLargeIcon(getLargeIcon(context))
+                .setContentTitle(geofences.size() + " contract locations")
                 .setContentText(locationHelper.getName())
                 .setTicker(context.getText(R.string.city_hello))
                 .setDefaults(Notification.DEFAULT_ALL)
@@ -80,6 +83,7 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
     private Notification buildSingleNotification(Context context, LocationHelper locationHelper, PendingIntent activity) {
         NotificationCompat.Builder notificationCompat = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_launcher)
+                .setLargeIcon(getLargeIcon(context))
                 .setContentTitle(locationHelper.getTransition() + " " + locationHelper.getName())
                 .setContentText(locationHelper.getName())
                 .setTicker(context.getText(R.string.city_hello))
@@ -95,6 +99,10 @@ public class GeofenceBroadcastReceiver extends BroadcastReceiver {
         }
 
         return notificationCompat.build();
+    }
+
+    private Bitmap getLargeIcon(Context context) {
+        return BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
     }
 
     private void geoTrack(Context context, LocationHelper locationHelper) {
