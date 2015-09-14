@@ -17,13 +17,13 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.0'
+    buildToolsVersion '23.0.1'
     defaultConfig {
         applicationId "com.appspace.cityapp"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 31
-        versionName '1.6.2'
+        versionCode 32
+        versionName '1.6.3'
     }
     buildTypes {
         release {
@@ -37,18 +37,18 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.1@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {
         transitive = true;
     }
     compile 'com.parse.bolts:bolts-android:1.2.1'
     compile 'com.google.android.gms:play-services-location:7.8.0'
     compile 'com.loopj.android:android-async-http:1.4.8'
     compile 'com.google.code.gson:gson:2.3.1'
-    compile 'io.keen:keen-client-api-android:2.1.1'
-    compile 'com.android.support:appcompat-v7:23.0.0'
+    compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.google.android.gms:play-services-analytics:7.8.0'
     compile 'pl.charmas.android:android-reactive-location:0.7'
     compile 'io.reactivex:rxjava:1.0.14'
-    compile 'com.facebook.android:facebook-android-sdk:4.5.0'
     compile 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+    compile 'com.facebook.android:facebook-android-sdk:4.6.0'
+    compile 'io.keen:keen-client-api-android:2.1.2'
 }
