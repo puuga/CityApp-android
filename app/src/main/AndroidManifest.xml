@@ -101,15 +101,15 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
-        <receiver
-            android:name="com.parse.ParsePushBroadcastReceiver"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.parse.push.intent.RECEIVE" />
-                <action android:name="com.parse.push.intent.DELETE" />
-                <action android:name="com.parse.push.intent.OPEN" />
-            </intent-filter>
-        </receiver>
+        <!--<receiver-->
+            <!--android:name="com.parse.ParsePushBroadcastReceiver"-->
+            <!--android:exported="false" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.parse.push.intent.RECEIVE" />-->
+                <!--<action android:name="com.parse.push.intent.DELETE" />-->
+                <!--<action android:name="com.parse.push.intent.OPEN" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
         <receiver
             android:name="com.parse.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -118,6 +118,15 @@
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
                 <category android:name="com.appspace.cityapp" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".push.MyPushBroadcastReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.parse.push.intent.RECEIVE" />
+                <action android:name="com.parse.push.intent.DELETE" />
+                <action android:name="com.parse.push.intent.OPEN" />
             </intent-filter>
         </receiver>
         <receiver android:name=".geo.GeofenceBroadcastReceiver" />

@@ -263,6 +263,7 @@ public class MyActivity extends AppCompatActivity implements
             public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
                 // called when response HTTP status is "4XX" (eg. 401, 403, 404)
                 isInternetAvailable = false;
+                Log.d("internet","code:"+statusCode);
                 exitAppWithDialog();
             }
 
